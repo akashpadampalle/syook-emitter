@@ -5,7 +5,7 @@ const io = require('socket.io-client');
 // data file
 const data = require('./data.json');
 
-const emitter = io('http://localhost:3000'); // listener server
+const emitter = io('https://syook-listener.vercel.app:3000'); // listener server
 
 // Function to generate random number
 function getRandomInt(min, max) {
@@ -45,7 +45,7 @@ function createRandomMessage() {
 function encryptMessage(message, key) {
   const iv = randomBytes(16);
   const cipher = crypto.createCipheriv('aes-256-ctr', Buffer.from(key, 'hex'), iv);
-  const encrypted = Buffer.concat([cipher.update(JSON.stringify(message), 'utf8'), cipher.final()]);  
+  const encrypted = Buffer.concat([cipher.update(JSON.stringify(message), 'utf8'), cipher.final()]); 
   return iv.toString('hex') + '|' + encrypted.toString('hex');
 }
 
@@ -56,16 +56,15 @@ function sendMessages() {
 
   for (let i = 0; i < batchSize; i++) {
     const message = createRandomMessage();
-    const encryptedMessage = encryptMessage(message, '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+    const encryptedMessage = encryptMessage(message, process.env.ENCRYPTIOIN_KEY);
     messages.push(encryptedMessage);
   }
 
-  const messageStream = messages.join('|');
-
+  const messageStream = messages.join('-');
   console.log(messageStream);
-
   emitter.emit('dataStream', messageStream);
 }
 
 // Start sending messages every 10 seconds
 setInterval(sendMessages, 10000);
+
